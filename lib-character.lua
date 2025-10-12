@@ -1,7 +1,5 @@
 -- ##############################################################################################
-if not CTDmod.lib.character then
-    CTDmod.lib.character = {}
-end
+if not CTDmod.lib.character then CTDmod.lib.character = {} end
 -- ##############################################################################################
 --- Функция для изменения категорий крафта персонажа
 function CTDmod.lib.character.craft_categories(categories)
