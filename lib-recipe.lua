@@ -4,7 +4,7 @@ if not CTDmod.lib.recipe then CTDmod.lib.recipe = {} end
 
 -- **********************************************************************************************
     -- Нормализация записи ингредиента
----@param ingredient any            принимает string or table,  примеры: 
+---@param ingredient any                    принимает string or table,  примеры: 
 -- "coal" или {"coal", 1} или {type = "item", name = "coal", amount = 1}
 ---@return table    -- возвращает в  виде таблицы {type = "item", name  = "item_name", amount = 1}
 -- **********************************************************************************************
@@ -37,8 +37,8 @@ end
 
 -- **********************************************************************************************
     -- ДОБАВЛЕНИЕ ЗАВИСИМОСТИ ОТ ТЕХНОЛОГИИ ДЛЯ РЕЦЕПТА
----@param recipe_name string        идентификатор рецепта
----@param tech_name string          идентификатор технологии
+---@param recipe_name string                идентификатор рецепта
+---@param tech_name string                  идентификатор технологии
 -- **********************************************************************************************
 function CTDmod.lib.recipe.add_tech_unlock(recipe_name, tech_name)
 
@@ -68,7 +68,7 @@ function CTDmod.lib.recipe.add_tech_unlock(recipe_name, tech_name)
         log("ИНФО: Дорогая версия рецепта '"..recipe_name.."' исключена из свободного крафта")
     end
 
-    if not recipe.normal and not recipe.expensive and recipe.enabled ~= false then
+    if not (recipe.normal or recipe.expensive) and recipe.enabled ~= false then
         recipe.enabled = false
         log("ИНФО: Рецепт '"..recipe_name.."' исключен из свободного крафта")
     end
@@ -85,9 +85,9 @@ end
 
 -- **********************************************************************************************
     -- ИЗМЕНЕНИЕ ЗАВИСИМОСТИ ОТ ТЕХНОЛОГИИ ДЛЯ РЕЦЕПТА
----@param recipe_name string        идентификатор рецепта
----@param old_tech string           идентификатор текущей технологии зависимости
----@param new_tech string           идентификатор новой технологии зависимости
+---@param recipe_name string                идентификатор рецепта
+---@param old_tech string                   идентификатор текущей технологии зависимости
+---@param new_tech string                   идентификатор новой технологии зависимости
 -- **********************************************************************************************
 function CTDmod.lib.recipe.change_tech_unlock(recipe_name, old_tech, new_tech)
 
@@ -136,8 +136,8 @@ end
 
 -- **********************************************************************************************
     -- УДАЛЕНИЕ ЗАВИСИМОСТИ ОТ ТЕХНОЛОГИИ ДЛЯ РЕЦЕПТА
----@param recipe_name string        идентификатор рецепта
----@param tech_name string          идентификатор технологии
+---@param recipe_name string                идентификатор рецепта
+---@param tech_name string                  идентификатор технологии
 -- при конечном отсутствии технологических зависимостей рецепт доступен по умолчанию
 -- **********************************************************************************************
 function CTDmod.lib.recipe.remove_tech_unlock(recipe_name, tech_name)
@@ -201,7 +201,7 @@ function CTDmod.lib.recipe.remove_tech_unlock(recipe_name, tech_name)
             if recipe.expensive and recipe.expensive.enabled ~= true then
                 recipe.expensive.enabled = true
             end
-            if not recipe.normal and not recipe.expensive and recipe.enabled ~= true then
+            if not (recipe.normal or recipe.expensive) and recipe.enabled ~= true then
                 recipe.enabled = true
             end
             log("ИНФО: Рецепт '"..recipe_name.."' больше не требует технологий для разблокировки")
@@ -217,7 +217,7 @@ end
 
 -- **********************************************************************************************
     -- ПОЛНОЕ УДАЛЕНИЕ ТЕХНОЛОГИЧЕСКИХ ЗАВИСИМОСТЕЙ РЕЦЕПТА
----@param recipe_name string        идентификатор рецепта
+---@param recipe_name string                идентификатор рецепта
 -- при конечном отсутствии технологических зависимостей рецепт доступен по умолчанию
 -- **********************************************************************************************
 function CTDmod.lib.recipe.remove_all_tech_unlocks(recipe_name)
@@ -256,7 +256,7 @@ function CTDmod.lib.recipe.remove_all_tech_unlocks(recipe_name)
         if recipe.expensive and recipe.expensive.enabled ~= true then
             recipe.expensive.enabled = true
         end
-        if not recipe.normal and not recipe.expensive and recipe.enabled ~= true then
+        if not (recipe.normal or recipe.expensive) and recipe.enabled ~= true then
             recipe.enabled = true
         end
         log("ИНФО: Удалены все технологические зависимости рецепта '"..recipe_name.."' из "..removed_count.." технологии(ий)")
@@ -321,7 +321,7 @@ function CTDmod.lib.recipe.add_ingredient(recipe_name, ingredient)
     if recipe.expensive then
         added = add_to_recipe_part(recipe.expensive) or added
     end
-    if not recipe.normal and not recipe.expensive then
+    if not (recipe.normal or recipe.expensive) then
         added = add_to_recipe_part(recipe) or added
     end
 
@@ -389,7 +389,7 @@ function CTDmod.lib.recipe.replace_ingredient(recipe_name, old_ingredient, new_i
     if recipe.expensive then
         replaced = replace_in_recipe_part(recipe.expensive) or replaced
     end
-    if not recipe.normal and not recipe.expensive then
+    if not (recipe.normal or recipe.expensive) then
         replaced = replace_in_recipe_part(recipe) or replaced
     end
 
@@ -405,8 +405,8 @@ end
 
 -- **********************************************************************************************
     -- ЗАМЕНА ИНГРЕДИЕНТА ВО ВСЕХ РЕЦЕПТАХ 
----@param old_item string                идентификатор старого ингредиента
----@param new_item string                идентификатор нового ингредиента
+---@param old_item string                   идентификатор старого ингредиента
+---@param new_item string                   идентификатор нового ингредиента
 -- **********************************************************************************************
 function CTDmod.lib.recipe.replace_ingredient_everywhere(old_item, new_item)
 
@@ -444,18 +444,18 @@ function CTDmod.lib.recipe.replace_ingredient_everywhere(old_item, new_item)
         end
     end
 
-        -- проверка технологий на требование предмета для исследования
-    for _, tech in pairs(data.raw.technology) do
-        if tech.unit and tech.unit.ingredients then
-            for _, ing in pairs(tech.unit.ingredients) do
-                if ing.name and ing.name == old_item then
-                    ing.name = new_item
-                elseif ing[1] and ing[1] == old_item then
-                    ing[1] = new_item
-                end
-            end
-        end
-    end
+    --     -- проверка технологий на требование предмета для исследования
+    -- for _, tech in pairs(data.raw.technology) do
+    --     if tech.unit and tech.unit.ingredients then
+    --         for _, ing in pairs(tech.unit.ingredients) do
+    --             if ing.name and ing.name == old_item then
+    --                 ing.name = new_item
+    --             elseif ing[1] and ing[1] == old_item then
+    --                 ing[1] = new_item
+    --             end
+    --         end
+    --     end
+    -- end
 
     log("ИНФО: Ингредиент '"..old_item.."' заменен на '"..new_item.."' во всех рецептах")
 
@@ -500,7 +500,7 @@ function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
     if recipe.expensive then
         removed = remove_from_recipe_part(recipe.expensive) or removed
     end
-    if not recipe.normal and not recipe.expensive then
+    if not (recipe.normal or recipe.expensive) then
         removed = remove_from_recipe_part(recipe) or removed
     end
 
@@ -510,6 +510,52 @@ function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
         log("ИНФО: Ингредиент '"..ingredient_name.."' не найден в рецепте '"..recipe_name..'"')
     end
     return removed
+
+end
+-- ##############################################################################################
+
+-- ##############################################################################################
+
+-- **********************************************************************************************
+    -- УСТАНАВЛИВАЕТ ВРЕМЯ, НЕОБХОДИМОЕ ДЛЯ СОЗДАНИЯ РЕЦЕПТА
+---@param recipe_name string                идентификатор рецепта
+---@param new_energy number                 время в секундах
+-- **********************************************************************************************
+function CTDmod.lib.recipe.set_energy_required(recipe_name, new_energy)
+
+    local recipe = data.raw.recipe[recipe_name]
+
+        -- проверка существования рецепта
+    if not recipe then
+        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        return false
+    end
+
+        -- проверка корректности нового значения времени
+    if type(new_energy) ~= "number" or new_energy <=0 then
+        error("ОШИБКА: Некорректное значение energy_required: "..tostring(new_energy))
+        return false
+    end
+
+    local function modify_energy(recipe_table)
+        recipe_table.energy_required = new_energy
+    end
+
+        -- обыный рецепт
+    if not (recipe.normal or recipe.expensive) then
+        modify_energy(recipe)
+    else
+            -- рецепты с нормальной / дорогой версиями
+        if recipe.normal then
+            modify_energy(recipe.normal)
+        end
+        if recipe.expensive then
+            modify_energy(recipe.expensive)
+        end
+    end
+
+    log("ИНФО: Время крафта для '"..recipe_name.."' установлено в "..tostring(new_energy).." сек.")
+    return true
 
 end
 -- ##############################################################################################
