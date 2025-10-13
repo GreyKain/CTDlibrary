@@ -668,3 +668,43 @@ function CTDmod.lib.recipe.add_result(recipe_name, new_item, amount, probability
     return true
 end
 -- ##############################################################################################
+
+-- **********************************************************************************************
+    -- МАССОВОЕ ДОБАВЛЕНИЕ ПРЕДМЕТОВ К РЕЗУЛЬТАТАМ РЕЦЕПТА
+---@param recipe_name string                идентификатор рецепта
+---@param items table                       Таблица предметов для добавления в формате:
+-- {
+--     {item = "item-name", amount = 1, probability = 1.0},
+--     {item = "other-item", amount = 2, probability = 0.5}
+-- }
+-- **********************************************************************************************
+function CTDmod.lib.recipe.add_results(recipe_name, items)
+
+        -- проверка существования рецепта
+    if not data.raw.recipe[recipe_name] then
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
+        return false
+    end
+
+    if type(items) ~= "table" then
+        error("ОШИБКА: параметр 'items' должен быть таблицей!")
+        return false
+    end
+
+    for _, item_data in ipairs(items) do
+        local success = CTDmod.lib.recipe.add_result(
+            recipe_name,
+            item_data.item,
+            item_data.amount,
+            item_data.probability
+        )
+        if not success then
+            return false
+        end
+    end
+
+    log("ИНФО: Добавлено '"..#items.."' результатов к рецепту '"..recipe_name.."'")
+    return true
+
+end
+-- ##############################################################################################
