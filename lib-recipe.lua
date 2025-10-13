@@ -12,15 +12,27 @@ local function normalized_ingredient(ingredient)
 
     local normalized
 
+    local n_type = "item"
+
+    if type(ingredient) == "string" then
+        if data.raw.fluid[ingredient] then
+            n_type = "fluid"
+        end
+    else
+        if data.raw.fluid[ingredient.name or ingredient[1]] then
+            n_type = "fluid"
+        end
+    end
+
     if type(ingredient) == "string" then
         normalized = {
-            type = "item",
+            type = n_type,
             name = ingredient,
             amount = 1
         }
     else
         normalized = {
-            type = ingredient.type or "item",
+            type = ingredient.type or n_type,
             name = ingredient.name or ingredient[1],
             amount = ingredient.amount or ingredient[2] or 1
         }
@@ -47,7 +59,7 @@ function CTDmod.lib.recipe.add_tech_unlock(recipe_name, tech_name)
 
         -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -93,7 +105,7 @@ function CTDmod.lib.recipe.change_tech_unlock(recipe_name, old_tech, new_tech)
 
         -- проверка существования рецепта
     if not data.raw.recipe[recipe_name] then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -147,7 +159,7 @@ function CTDmod.lib.recipe.remove_tech_unlock(recipe_name, tech_name)
 
         -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -226,7 +238,7 @@ function CTDmod.lib.recipe.remove_all_tech_unlocks(recipe_name)
 
             -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -283,7 +295,7 @@ function CTDmod.lib.recipe.add_ingredient(recipe_name, ingredient)
 
         -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -346,7 +358,7 @@ function CTDmod.lib.recipe.replace_ingredient(recipe_name, old_ingredient, new_i
 
         -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -473,7 +485,7 @@ function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
 
         -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -527,7 +539,7 @@ function CTDmod.lib.recipe.set_energy_required(recipe_name, new_energy)
 
         -- проверка существования рецепта
     if not recipe then
-        error("ОШИБКА: Рецепт не найден - '"..recipe_name.."'")
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
         return false
     end
 
@@ -557,5 +569,102 @@ function CTDmod.lib.recipe.set_energy_required(recipe_name, new_energy)
     log("ИНФО: Время крафта для '"..recipe_name.."' установлено в "..tostring(new_energy).." сек.")
     return true
 
+end
+-- ##############################################################################################
+
+-- **********************************************************************************************
+    -- ДОБАВЛЕНИЕ ПРЕДМЕТА В РЕЗАЛЬТАТЫ РЕЦЕПТА
+---@param recipe_name string                идентификатор рецепта
+---@param new_item string                   идентификатор результата
+---@param amount number                     кол-во результата
+---@param probability number                шанс результата (1.0 - 100%)
+-- **********************************************************************************************
+function CTDmod.lib.recipe.add_result(recipe_name, new_item, amount, probability)
+
+    local recipe = data.raw.recipe[recipe_name]
+
+        -- проверка существования рецепта
+    if not recipe then
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
+        return false
+    end
+
+    if not data.raw.item[new_item] and
+    not data.raw.fluid[new_item] and
+    not data.raw.tool[new_item] then
+        error("ОШИБКА: Предмет '"..new_item.."' не найден!")
+    end
+
+    local n_type = "item"
+
+    if data.raw.fluid[new_item] then
+        n_type = "fluid"
+    end
+
+    amount = amount or 1
+    probability = probability or 1.0
+
+    local function add_to_existing_results(results)
+        if not results then
+            return {{type = n_type, name = new_item, amount = amount, probability = probability}}
+        end
+        table.insert(results, {
+            type = n_type,
+            name = new_item,
+            amount = amount,
+            probability = probability
+        })
+        return results
+    end
+
+    if not (recipe.normal or recipe.expensive) then
+        if recipe.result and not recipe.results then
+            recipe.results = {
+                {
+                    type = n_type,
+                    name = recipe.result,
+                    amount = recipe.result_count or 1
+                }
+            }
+        end
+        recipe.results = add_to_existing_results(recipe.results)
+        if not recipe.main_product then
+            recipe.main_product = recipe.results[1].name
+        end
+    else
+        if recipe.normal then
+            if recipe.normal.result and not recipe.normal.results then
+                recipe.normal.results = {
+                    {
+                        type = n_type,
+                        name = recipe.normal.result,
+                        amount = recipe.normal.result_count or 1
+                    }
+                }
+            end
+            recipe.normal.results = add_to_existing_results(recipe.normal.results)
+            if not recipe.normal.main_product then
+                recipe.normal.main_product = recipe.normal.results[1].name
+            end
+        end
+        if recipe.expensive then
+            if recipe.expensive.result and not recipe.expensive.results then
+                recipe.expensive.results = {
+                    {
+                        type = n_type,
+                        name = recipe.expensive.result,
+                        amount = recipe.expensive.result_count or 1
+                    }
+                }
+            end
+            recipe.expensive.results = add_to_existing_results(recipe.expensive.results)
+            if not recipe.expensive.main_product then
+                recipe.expensive.main_product = recipe.expensive.results[1].name
+            end
+        end
+    end
+
+    log("ИНФО: Предмет '"..new_item.."' добавлен к рецепту '"..recipe_name.."'")
+    return true
 end
 -- ##############################################################################################
