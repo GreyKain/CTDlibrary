@@ -281,8 +281,6 @@ function CTDmod.lib.recipe.remove_all_tech_unlocks(recipe_name)
 end
 -- ##############################################################################################
 
--- ##############################################################################################
-
 -- **********************************************************************************************
     -- ДОБАВЛЕНИЕ ИНГРЕДИЕНТА В РЕЦЕПТ
 ---@param recipe_name string                идентификатор рецепта
@@ -526,8 +524,6 @@ function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
 end
 -- ##############################################################################################
 
--- ##############################################################################################
-
 -- **********************************************************************************************
     -- УСТАНАВЛИВАЕТ ВРЕМЯ, НЕОБХОДИМОЕ ДЛЯ СОЗДАНИЯ РЕЦЕПТА
 ---@param recipe_name string                идентификатор рецепта
@@ -577,7 +573,7 @@ end
 ---@param recipe_name string                идентификатор рецепта
 ---@param new_item string                   идентификатор результата
 ---@param amount number                     кол-во результата
----@param probability number                шанс результата (1.0 - 100%)
+---@param probability number                шанс результата (1.0 = 100%)
 -- **********************************************************************************************
 function CTDmod.lib.recipe.add_result(recipe_name, new_item, amount, probability)
 
@@ -589,10 +585,9 @@ function CTDmod.lib.recipe.add_result(recipe_name, new_item, amount, probability
         return false
     end
 
-    if not data.raw.item[new_item] and
-    not data.raw.fluid[new_item] and
-    not data.raw.tool[new_item] then
+    if not (data.raw.item[new_item] or data.raw.tool[new_item] or data.raw.fluid[new_item]) then
         error("ОШИБКА: Предмет '"..new_item.."' не найден!")
+        return false
     end
 
     local n_type = "item"
@@ -705,6 +700,82 @@ function CTDmod.lib.recipe.add_results(recipe_name, items)
 
     log("ИНФО: Добавлено '"..#items.."' результатов к рецепту '"..recipe_name.."'")
     return true
+
+end
+-- ##############################################################################################
+
+-- **********************************************************************************************
+    -- ЗАМЕНА РЕЗУЛЬТАТА РЕЦЕПТА
+---@param recipe_name string                идентификатор рецепта
+---@param old_item string                   идентификатор старого результата
+---@param new_item string                   идентификатор нового результата
+---@param new_amount number                 новое кол-во
+---@param new_probability number            новая вероятность (1.0 = 100%)
+-- **********************************************************************************************
+function CTDmod.lib.recipe.replace_result(recipe_name, old_item, new_item, new_amount, new_probability)
+
+    local recipe = data.raw.recipe[recipe_name]
+
+        -- проверка существования рецепта
+    if not recipe then
+        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
+        return false
+    end
+
+    if not (data.raw.item[old_item] or data.raw.tool[old_item] or data.raw.fluid[old_item]) then
+        error("ОШИБКА: Старый результат '"..old_item.."' не найден в игре!")
+        return false
+    end
+
+    if not (data.raw.item[new_item] or data.raw.tool[new_item] or data.raw.fluid[new_item]) then
+        error("ОШИБКА: Новый результат '"..new_item.."' не найден в игре!")
+        return false
+    end
+
+    local n_type = "item"
+
+    if data.raw.fluid[new_item] then
+        n_type = "fluid"
+    end
+
+    local replaced = false
+
+    local function replace_in_results(results)
+        if not results then return false end
+
+        for _, result in ipairs(results) do
+            local result_name = result.name or result[1]
+            if result_name == old_item then
+                result.name = new_item
+                if result[1] then result[1] = new_item end
+                if n_type ~= "item" then result.type = n_type end
+                if new_amount then result.amount = new_amount end
+                if new_probability then result.probability = new_probability end
+                return true
+            end
+        end
+        return false
+    end
+
+        -- обработка разных вариантов рецептов
+    if recipe.normal or recipe.expensive then
+        if recipe.normal then
+            replaced = replace_in_results(recipe.normal.results) or replaced
+        end
+        if recipe.expensive then
+            replaced = replace_in_results(recipe.expensive.results) or replaced
+        end
+    else
+        replaced = replace_in_results(recipe.results) or replaced
+    end
+
+    if replaced then
+        log("ИНФО: Заменен результат '"..old_item.."' на '"..new_item.."' в рецепте '"..recipe_name.."'")
+        return true
+    else
+        error("ОШИБКА: Резельтат '"..old_item.."' не найден в результатах рецепта '"..recipe_name.."'")
+        return false
+    end
 
 end
 -- ##############################################################################################
