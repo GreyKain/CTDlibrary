@@ -624,3 +624,82 @@ function CTDmod.lib.recipe.replace_result(recipe_name, old_item, new_item, new_a
 
 end
 -- ##############################################################################################
+
+-- **********************************************************************************************
+    -- ДУБЛИРОВАНИЕ РЕЦЕПТА С ВОЗМОЖНОСТЬЮ СКРЫТИЯ ОРИГИНАЛА
+---@param orig_name string                  идентификатор оригинального рецепта
+---@param new_name string                   идентификатор нового рецепта
+---@param parameters table                   таблица с новыми / изменеными параметрами рецепта
+---@param hiding_from_player boolean        скрыть из видимости крафта игрока (true / false)
+-- **********************************************************************************************
+function CTDmod.lib.recipe.duplicate(orig_name, new_name, parameters, hiding_from_player)
+
+    local original = data.raw.recipe[orig_name]
+
+        -- проверка существования оригинального рецепта
+    if not original then
+        error("ОШИБКА: Рецепт '"..orig_name.."' не найден!")
+        return false
+    end
+
+    local recipe_copy = data.raw.recipe[new_name]
+
+        -- проверка существования нового рецепта
+    if recipe_copy then
+        error("ОШИБКА: Рецепт '"..new_name.."' уже существует!")
+        return false
+    end
+
+        -- 1. Изменение категории рецепта, если не существует - создать
+    if parameters and parameters.category and not data.raw["recipe-category"][parameters.category] then
+        data: extend ({
+            {
+                type = "recipe-category",
+                name = parameters.category
+            }
+        })
+    end
+
+        -- 2. Копирование рецепта
+    local copy = table.deepcopy(original)
+    copy.name = new_name
+
+        -- 3. Обновление параметров
+    if parameters then
+        for k, v in pairs(parameters) do
+            copy[k] = v
+        end
+    end
+
+        -- 4. Добавление дубликата рецепта
+    data: extend({copy})
+
+        -- 5. Поиск и копирование привязки к технологиям
+    for _, tech in pairs(data.raw.technology) do
+        if tech.effects then
+            for _, effect in ipairs(tech.effects) do
+                if effect.type == "unlock-recipe" and effect.recipe == orig_name then
+                        -- добавляем копию рецепта в ту же технологию
+                    table.insert(tech.effects, {
+                        type = "unlock-recipe",
+                        recipe = new_name
+                    })
+                    log("ИНФО: Рецепт '"..new_name.."' добавлен в разблокировку технологией '"..tech.name.."'")
+                    break
+                end
+            end
+        end
+    end
+
+        -- 6. Скрытие оригинального рецепта из крафта игрока (опционально)
+    if hiding_from_player then
+        original.hide_from_player_crafting = true
+        log("ИНФО: Создан рецепт '"..new_name.."' на основе '"..orig_name.."'. Рецепт '"..orig_name.."' скрыт от игрока")
+    else
+        log("ИНФО: Создан рецепт '"..new_name.."' на основе '"..orig_name.."'")
+    end
+
+    return true
+
+end
+-- ##############################################################################################
