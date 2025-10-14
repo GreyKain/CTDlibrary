@@ -69,18 +69,7 @@ function CTDmod.lib.recipe.add_tech_unlock(recipe_name, tech_name)
         return false
     end
 
-        -- обработка разных форматов рецептов
-    if recipe.normal and recipe.normal.enabled ~= false then
-        recipe.normal.enabled = false
-        log("ИНФО: Нормальная версия рецепта '"..recipe_name.."' исключена из свободного крафта")
-    end
-
-    if recipe.expensive and recipe.expensive.enabled ~= false then
-        recipe.expensive.enabled = false
-        log("ИНФО: Дорогая версия рецепта '"..recipe_name.."' исключена из свободного крафта")
-    end
-
-    if not (recipe.normal or recipe.expensive) and recipe.enabled ~= false then
+    if recipe.enabled ~= false then
         recipe.enabled = false
         log("ИНФО: Рецепт '"..recipe_name.."' исключен из свободного крафта")
     end
@@ -207,13 +196,7 @@ function CTDmod.lib.recipe.remove_tech_unlock(recipe_name, tech_name)
         log("ИНФО: Зависимость рецепта '"..recipe_name.."' от технологии '"..tech_name.."' удалена")
             -- если технологий разблокировки не осталось включаем рецепт по умолчанию
         if remove_unlock == true then
-            if recipe.normal and recipe.normal.enabled ~= true then
-                recipe.normal.enabled = true
-            end
-            if recipe.expensive and recipe.expensive.enabled ~= true then
-                recipe.expensive.enabled = true
-            end
-            if not (recipe.normal or recipe.expensive) and recipe.enabled ~= true then
+            if recipe.enabled ~= true then
                 recipe.enabled = true
             end
             log("ИНФО: Рецепт '"..recipe_name.."' больше не требует технологий для разблокировки")
@@ -262,13 +245,7 @@ function CTDmod.lib.recipe.remove_all_tech_unlocks(recipe_name)
     end
 
     if removed_count > 0 then
-        if recipe.normal and recipe.normal.enabled ~= true then
-            recipe.normal.enabled = true
-        end
-        if recipe.expensive and recipe.expensive.enabled ~= true then
-            recipe.expensive.enabled = true
-        end
-        if not (recipe.normal or recipe.expensive) and recipe.enabled ~= true then
+        if recipe.enabled ~= true then
             recipe.enabled = true
         end
         log("ИНФО: Удалены все технологические зависимости рецепта '"..recipe_name.."' из "..removed_count.." технологии(ий)")
@@ -324,16 +301,7 @@ function CTDmod.lib.recipe.add_ingredient(recipe_name, ingredient)
 
     local added = false
 
-    -- добавление в разные варианты рецептов
-    if recipe.normal then
-        added = add_to_recipe_part(recipe.normal) or added
-    end
-    if recipe.expensive then
-        added = add_to_recipe_part(recipe.expensive) or added
-    end
-    if not (recipe.normal or recipe.expensive) then
-        added = add_to_recipe_part(recipe) or added
-    end
+    added = add_to_recipe_part(recipe) or added
 
     if added then
         log("ИНФО: Ингредиент '"..normalized.name.."' добавлен в рецепт '"..recipe_name.."'")
@@ -345,6 +313,7 @@ end
 
 -- **********************************************************************************************
     -- ЗАМЕНА ИНГРЕДИЕНТА В РЕЦЕПТЕ
+-- (если старый ингредиент = новый ингредиент, можно заменить кол-во)
 ---@param recipe_name string                идентификатор рецепта
 ---@param old_ingredient string             старый ингредиент
 ---@param new_ingredient any (string or table)  примеры: 
@@ -362,6 +331,8 @@ function CTDmod.lib.recipe.replace_ingredient(recipe_name, old_ingredient, new_i
 
     local replaced = false
 
+    local normalized = normalized_ingredient(new_ingredient)
+
         -- Функция замены в конкретной части рецепта
     local function replace_in_recipe_part(recipe_part)
 
@@ -376,12 +347,12 @@ function CTDmod.lib.recipe.replace_ingredient(recipe_name, old_ingredient, new_i
 
                     -- замена ингредиента
                 if ing.name then
-                    ing.name = new_ingredient.name or new_ingredient
-                    ing.type = new_ingredient.type or "item"
-                    ing.amount = new_ingredient.amount or amount
+                    ing.name = normalized.name
+                    ing.type = normalized.type
+                    ing.amount = normalized.amount
                 else
-                    ing[1] = new_ingredient.name or new_ingredient
-                    ing[2] = new_ingredient.amount or amount
+                    ing[1] = normalized.name
+                    ing[2] = normalized.amount
                 end
                 return true
 
@@ -392,19 +363,10 @@ function CTDmod.lib.recipe.replace_ingredient(recipe_name, old_ingredient, new_i
 
     end
 
-        -- замена в разных вариантах рецепта
-    if recipe.normal then
-        replaced = replace_in_recipe_part(recipe.normal) or replaced
-    end
-    if recipe.expensive then
-        replaced = replace_in_recipe_part(recipe.expensive) or replaced
-    end
-    if not (recipe.normal or recipe.expensive) then
-        replaced = replace_in_recipe_part(recipe) or replaced
-    end
+    replaced = replace_in_recipe_part(recipe) or replaced
 
     if replaced then
-        log("ИНФО: В рецепте '"..recipe_name.."' ингредиент '"..old_ingredient.."' заменен на '"..(new_ingredient.name or new_ingredient).."'")
+        log("ИНФО: В рецепте '"..recipe_name.."' ингредиент '"..old_ingredient.."' заменен на '"..tostring(normalized.name).."'")
     else
         log("ИНФО: Ингредиент '"..old_ingredient.."' не найден в рецепте '"..recipe_name.."'")
     end
@@ -422,32 +384,11 @@ function CTDmod.lib.recipe.replace_ingredient_everywhere(old_item, new_item)
 
         -- перебор всех рецептов
     for _, recipe in pairs(data.raw.recipe) do
-            -- обычные рецепты
         if recipe.ingredients then
             for _, ing in pairs(recipe.ingredients) do
                 if ing.name and ing.name == old_item then
                     ing.name = new_item
                 elseif ing[1] and ing[1] == old_item then
-                    ing[1] = new_item
-                end
-            end
-        end
-            -- нормальные рецепты
-        if recipe.normal and recipe.normal.ingredients then
-            for _, ing in pairs(recipe.normal.ingredients) do
-                if ing.name and ing.name == old_item then
-                    ing.name = new_item
-                elseif  ing[1] and ing[1] == old_item then
-                    ing[1] = new_item
-                end
-            end
-        end
-            -- дорогие рецепты
-        if recipe.expensive and recipe.expensive.ingredients then
-            for _, ing in pairs(recipe.expensive.ingredients) do
-                if ing.name and ing.name == old_item then
-                    ing.name = new_item
-                elseif  ing[1] and ing[1] == old_item then
                     ing[1] = new_item
                 end
             end
@@ -503,16 +444,7 @@ function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
         return false
     end
 
-        -- удаление из разных вариантов рецептов
-    if recipe.normal then
-        removed = remove_from_recipe_part(recipe.normal) or removed
-    end
-    if recipe.expensive then
-        removed = remove_from_recipe_part(recipe.expensive) or removed
-    end
-    if not (recipe.normal or recipe.expensive) then
-        removed = remove_from_recipe_part(recipe) or removed
-    end
+    removed = remove_from_recipe_part(recipe) or removed
 
     if removed then
         log("ИНФО: Ингредиент '"..ingredient_name.."' удален из рецепта '"..recipe_name.."'")
@@ -520,50 +452,6 @@ function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
         log("ИНФО: Ингредиент '"..ingredient_name.."' не найден в рецепте '"..recipe_name..'"')
     end
     return removed
-
-end
--- ##############################################################################################
-
--- **********************************************************************************************
-    -- УСТАНАВЛИВАЕТ ВРЕМЯ, НЕОБХОДИМОЕ ДЛЯ СОЗДАНИЯ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param new_energy number                 время в секундах
--- **********************************************************************************************
-function CTDmod.lib.recipe.set_energy_required(recipe_name, new_energy)
-
-    local recipe = data.raw.recipe[recipe_name]
-
-        -- проверка существования рецепта
-    if not recipe then
-        error("ОШИБКА: Рецепт '"..recipe_name.."' не найден!")
-        return false
-    end
-
-        -- проверка корректности нового значения времени
-    if type(new_energy) ~= "number" or new_energy <=0 then
-        error("ОШИБКА: Некорректное значение energy_required: "..tostring(new_energy))
-        return false
-    end
-
-    local function modify_energy(recipe_table)
-        recipe_table.energy_required = new_energy
-    end
-
-        -- обыный рецепт
-    if not (recipe.normal or recipe.expensive) then
-        modify_energy(recipe)
-    else
-            -- рецепты с нормальной / дорогой версиями
-        if recipe.normal then
-            modify_energy(recipe.normal)
-        end
-        if recipe.expensive then
-            modify_energy(recipe.expensive)
-        end
-    end
-
-    log("ИНФО: Время крафта для '"..recipe_name.."' установлено в "..tostring(new_energy).." сек.")
-    return true
 
 end
 -- ##############################################################################################
@@ -612,51 +500,18 @@ function CTDmod.lib.recipe.add_result(recipe_name, new_item, amount, probability
         return results
     end
 
-    if not (recipe.normal or recipe.expensive) then
-        if recipe.result and not recipe.results then
-            recipe.results = {
-                {
-                    type = n_type,
-                    name = recipe.result,
-                    amount = recipe.result_count or 1
-                }
-            }
-        end
-        recipe.results = add_to_existing_results(recipe.results)
-        if not recipe.main_product then
-            recipe.main_product = recipe.results[1].name
-        end
-    else
-        if recipe.normal then
-            if recipe.normal.result and not recipe.normal.results then
-                recipe.normal.results = {
-                    {
-                        type = n_type,
-                        name = recipe.normal.result,
-                        amount = recipe.normal.result_count or 1
-                    }
-                }
-            end
-            recipe.normal.results = add_to_existing_results(recipe.normal.results)
-            if not recipe.normal.main_product then
-                recipe.normal.main_product = recipe.normal.results[1].name
-            end
-        end
-        if recipe.expensive then
-            if recipe.expensive.result and not recipe.expensive.results then
-                recipe.expensive.results = {
-                    {
-                        type = n_type,
-                        name = recipe.expensive.result,
-                        amount = recipe.expensive.result_count or 1
-                    }
-                }
-            end
-            recipe.expensive.results = add_to_existing_results(recipe.expensive.results)
-            if not recipe.expensive.main_product then
-                recipe.expensive.main_product = recipe.expensive.results[1].name
-            end
-        end
+
+    recipe.results = {
+        {
+            type = n_type,
+            name = recipe.result,
+            amount = recipe.result_count or 1
+        }
+    }
+
+    recipe.results = add_to_existing_results(recipe.results)
+    if not recipe.main_product then
+        recipe.main_product = recipe.results[1].name
     end
 
     log("ИНФО: Предмет '"..new_item.."' добавлен к рецепту '"..recipe_name.."'")
@@ -757,17 +612,7 @@ function CTDmod.lib.recipe.replace_result(recipe_name, old_item, new_item, new_a
         return false
     end
 
-        -- обработка разных вариантов рецептов
-    if recipe.normal or recipe.expensive then
-        if recipe.normal then
-            replaced = replace_in_results(recipe.normal.results) or replaced
-        end
-        if recipe.expensive then
-            replaced = replace_in_results(recipe.expensive.results) or replaced
-        end
-    else
-        replaced = replace_in_results(recipe.results) or replaced
-    end
+    replaced = replace_in_results(recipe.results) or replaced
 
     if replaced then
         log("ИНФО: Заменен результат '"..old_item.."' на '"..new_item.."' в рецепте '"..recipe_name.."'")
