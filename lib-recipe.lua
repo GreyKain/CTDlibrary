@@ -49,8 +49,8 @@ end
 
 -- **********************************************************************************************
     -- ДОБАВЛЕНИЕ ЗАВИСИМОСТИ ОТ ТЕХНОЛОГИИ ДЛЯ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param tech_name string                  идентификатор технологии
+---@param recipe_name string                Идентификатор рецепта
+---@param tech_name string                  Идентификатор технологии
 -- **********************************************************************************************
 function CTDmod.lib.recipe.add_tech_unlock(recipe_name, tech_name)
 
@@ -86,9 +86,9 @@ end
 
 -- **********************************************************************************************
     -- ИЗМЕНЕНИЕ ЗАВИСИМОСТИ ОТ ТЕХНОЛОГИИ ДЛЯ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param old_tech string                   идентификатор текущей технологии зависимости
----@param new_tech string                   идентификатор новой технологии зависимости
+---@param recipe_name string                Идентификатор рецепта
+---@param old_tech string                   Идентификатор текущей технологии зависимости
+---@param new_tech string                   Идентификатор новой технологии зависимости
 -- **********************************************************************************************
 function CTDmod.lib.recipe.change_tech_unlock(recipe_name, old_tech, new_tech)
 
@@ -137,8 +137,8 @@ end
 
 -- **********************************************************************************************
     -- УДАЛЕНИЕ ЗАВИСИМОСТИ ОТ ТЕХНОЛОГИИ ДЛЯ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param tech_name string                  идентификатор технологии
+---@param recipe_name string                Идентификатор рецепта
+---@param tech_name string                  Идентификатор технологии
 -- при конечном отсутствии технологических зависимостей рецепт доступен по умолчанию
 -- **********************************************************************************************
 function CTDmod.lib.recipe.remove_tech_unlock(recipe_name, tech_name)
@@ -212,7 +212,7 @@ end
 
 -- **********************************************************************************************
     -- ПОЛНОЕ УДАЛЕНИЕ ТЕХНОЛОГИЧЕСКИХ ЗАВИСИМОСТЕЙ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
+---@param recipe_name string                Идентификатор рецепта
 -- при конечном отсутствии технологических зависимостей рецепт доступен по умолчанию
 -- **********************************************************************************************
 function CTDmod.lib.recipe.remove_all_tech_unlocks(recipe_name)
@@ -260,7 +260,7 @@ end
 
 -- **********************************************************************************************
     -- ДОБАВЛЕНИЕ ИНГРЕДИЕНТА В РЕЦЕПТ
----@param recipe_name string                идентификатор рецепта
+---@param recipe_name string                Идентификатор рецепта
 ---@param ingredient any (string or table)  примеры: 
 -- "coal" или {"coal", 1} или {type = "item", name = "coal", amount = 1}
 -- **********************************************************************************************
@@ -314,8 +314,8 @@ end
 -- **********************************************************************************************
     -- ЗАМЕНА ИНГРЕДИЕНТА В РЕЦЕПТЕ
 -- (если старый ингредиент = новый ингредиент, можно заменить кол-во)
----@param recipe_name string                идентификатор рецепта
----@param old_ingredient string             старый ингредиент
+---@param recipe_name string                Идентификатор рецепта
+---@param old_ingredient string             Старый ингредиент
 ---@param new_ingredient any (string or table)  примеры: 
 -- "coal" или {"coal", 1} или {type = "item", name = "coal", amount = 1}
 -- **********************************************************************************************
@@ -377,8 +377,8 @@ end
 
 -- **********************************************************************************************
     -- ЗАМЕНА ИНГРЕДИЕНТА ВО ВСЕХ РЕЦЕПТАХ 
----@param old_item string                   идентификатор старого ингредиента
----@param new_item string                   идентификатор нового ингредиента
+---@param old_item string                   Идентификатор старого ингредиента
+---@param new_item string                   Идентификатор нового ингредиента
 -- **********************************************************************************************
 function CTDmod.lib.recipe.replace_ingredient_everywhere(old_item, new_item)
 
@@ -415,8 +415,8 @@ end
 
 -- **********************************************************************************************
     -- УДАЛЕНИЕ ИНГРЕДИЕНТА ИЗ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param ingredient_name string            идентификатор ингредиента
+---@param recipe_name string                Идентификатор рецепта
+---@param ingredient_name string            Идентификатор ингредиента
 -- **********************************************************************************************
 function CTDmod.lib.recipe.remove_ingredient(recipe_name, ingredient_name)
 
@@ -458,10 +458,10 @@ end
 
 -- **********************************************************************************************
     -- ДОБАВЛЕНИЕ ПРЕДМЕТА В РЕЗАЛЬТАТЫ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param new_item string                   идентификатор результата
----@param amount number                     кол-во результата
----@param probability number                шанс результата (1.0 = 100%)
+---@param recipe_name string                Идентификатор рецепта
+---@param new_item string                   Идентификатор результата
+---@param amount number                     Кол-во результата
+---@param probability number                Шанс результата (1.0 = 100%)
 -- **********************************************************************************************
 function CTDmod.lib.recipe.add_result(recipe_name, new_item, amount, probability)
 
@@ -521,7 +521,7 @@ end
 
 -- **********************************************************************************************
     -- МАССОВОЕ ДОБАВЛЕНИЕ ПРЕДМЕТОВ К РЕЗУЛЬТАТАМ РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
+---@param recipe_name string                Идентификатор рецепта
 ---@param items table                       Таблица предметов для добавления в формате:
 -- {
 --     {item = "item-name", amount = 1, probability = 1.0},
@@ -561,11 +561,11 @@ end
 
 -- **********************************************************************************************
     -- ЗАМЕНА РЕЗУЛЬТАТА РЕЦЕПТА
----@param recipe_name string                идентификатор рецепта
----@param old_item string                   идентификатор старого результата
----@param new_item string                   идентификатор нового результата
----@param new_amount number                 новое кол-во
----@param new_probability number            новая вероятность (1.0 = 100%)
+---@param recipe_name string                Идентификатор рецепта
+---@param old_item string                   Идентификатор старого результата
+---@param new_item string                   Идентификатор нового результата
+---@param new_amount number                 Новое кол-во
+---@param new_probability number            Новая вероятность (1.0 = 100%)
 -- **********************************************************************************************
 function CTDmod.lib.recipe.replace_result(recipe_name, old_item, new_item, new_amount, new_probability)
 
@@ -627,10 +627,10 @@ end
 
 -- **********************************************************************************************
     -- ДУБЛИРОВАНИЕ РЕЦЕПТА С ВОЗМОЖНОСТЬЮ СКРЫТИЯ ОРИГИНАЛА
----@param orig_name string                  идентификатор оригинального рецепта
----@param new_name string                   идентификатор нового рецепта
----@param parameters table                   таблица с новыми / изменеными параметрами рецепта
----@param hiding_from_player boolean        скрыть из видимости крафта игрока (true / false)
+---@param orig_name string                  Идентификатор оригинального рецепта
+---@param new_name string                   Идентификатор нового рецепта
+---@param parameters table                  Таблица с новыми / изменеными параметрами рецепта
+---@param hiding_from_player boolean        Скрыть из видимости крафта игрока (true / false)
 -- **********************************************************************************************
 function CTDmod.lib.recipe.duplicate(orig_name, new_name, parameters, hiding_from_player)
 
@@ -701,5 +701,107 @@ function CTDmod.lib.recipe.duplicate(orig_name, new_name, parameters, hiding_fro
 
     return true
 
+end
+-- ##############################################################################################
+
+-- **********************************************************************************************
+    -- ПОЛНОЕ УДАЛЕНИЕ РЕЦЕПТА
+---@param recipe_name string                Идентификатор удаляемого рецепта
+---@return boolean
+-- **********************************************************************************************
+function CTDmod.lib.recipe.completely_delete(recipe_name)
+    if not data.raw.recipe[recipe_name] then return false end
+
+    -- 1. Собираем все предметы из результатов рецепта
+    local result_items = {}
+    local recipe = data.raw.recipe[recipe_name]
+
+    local function collect_results(r)
+        if r.result then
+            result_items[r.result] = true
+        end
+        if r.results then
+            for _, res in ipairs(r.results) do
+                result_items[res.name or res[1]] = true
+            end
+        end
+    end
+
+    collect_results(recipe)
+
+    -- 2. Обрабатываем предметы и связанные сущности
+    for item_name, _ in pairs(result_items) do
+        -- Находим предмет
+        local item = data.raw.item[item_name] or data.raw.tool[item_name] or
+                    data.raw.ammo[item_name] or data.raw.capsule[item_name] or
+                    data.raw.module[item_name] or data.raw.gun[item_name] or
+                    data.raw.armor[item_name]
+
+        if item then
+            -- Сначала обрабатываем связанные сущности (если есть place_result)
+            if item.place_result then
+                for _, entity_type in ipairs({
+                    "inserter", "assembling-machine", "furnace", "mining-drill",
+                    "lab", "transport-belt", "container", "wall", "reactor",
+                    "boiler", "generator", "solar-panel", "accumulator",
+                    "radar", "beacon", "roboport", "turret", "car", "locomotive"
+                }) do
+                    local entity = data.raw[entity_type] and data.raw[entity_type][item.place_result]
+                    if entity then
+                        -- Критически важная последовательность:
+                        -- 1. Сначала убираем mining result если он ссылается на наш предмет
+                        if entity.mineable and (entity.mineable.result == item_name or
+                           (entity.mineable.results and #entity.mineable.results > 0)) then
+                            entity.mineable = nil -- Полностью отключаем добычу
+                        end
+
+                        -- 2. Затем удаляем цепочку апгрейдов
+                        entity.next_upgrade = nil
+
+                        -- 3. Только потом скрываем сущность
+                        entity.hidden = true
+                        entity.hidden_in_factoriopedia = true
+                    end
+                end
+            end
+
+            -- Скрываем сам предмет
+            item.hidden = true
+            item.hidden_in_factoriopedia = true
+        end
+    end
+
+    -- 3. Удаляем сам рецепт и все его упоминания
+    data.raw.recipe[recipe_name] = nil
+
+    -- 4. Чистим упоминания в технологиях
+    for _, tech in pairs(data.raw.technology) do
+        if tech.effects then
+            for i = #tech.effects, 1, -1 do
+                if tech.effects[i].type == "unlock-recipe" and tech.effects[i].recipe == recipe_name then
+                    table.remove(tech.effects, i)
+                end
+            end
+        end
+    end
+
+    -- 5. Чистим упоминания в ингредиентах других рецептов
+    for _, other_recipe in pairs(data.raw.recipe) do
+        local function clean_ingredients(ingredients)
+            if not ingredients then return end
+            for i = #ingredients, 1, -1 do
+                local ing = ingredients[i]
+                if (ing.name and ing.name == recipe_name) or (ing[1] and ing[1] == recipe_name) then
+                    table.remove(ingredients, i)
+                end
+            end
+        end
+
+        clean_ingredients(other_recipe.ingredients)
+
+    end
+
+    log("Рецепт '"..recipe_name.."' и связанные объекты полностью удалены")
+    return true
 end
 -- ##############################################################################################
