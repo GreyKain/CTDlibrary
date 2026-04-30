@@ -5,7 +5,7 @@ if not CTDmod.lib then CTDmod.lib = {} end
 
 -- ##############################################################################################
 require("lib-recipe")
--- require("lib-tech")
+require("lib-tech")
 require("lib-character")
 -- require("lib.library-resource")
 -- require("lib.resource-autoplace")
