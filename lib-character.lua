@@ -6,7 +6,7 @@ if not CTDmod.lib.character then CTDmod.lib.character = {} end
     -- ИЗМЕНЕНИЕ КАТЕГОРИЙ КРАФТА ПЕРСОНАЖА
 -- ----------------------------------------------------------------------------------------------
 ---@param categories table                  Пример использования:
--- CTDmod.lib.character.update_all_crafting({
+-- CTDmod.lib.character.craft_categories({
 --     "CTD-handmade",      -- Ваша новая категория
 --     "crafting",          -- Стандартная категория ручного крафта
 --     "advanced-crafting"  -- Дополнительные категории по необходимости
